@@ -1,0 +1,77 @@
+.planner-clock-picker { min-width: 0; }
+.planner-clock-display { display: flex; align-items: center; justify-content: center; gap: 18px; }
+.planner-clock-time { display: flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
+.planner-clock-time > button { min-width: 56px; min-height: 44px; border-radius: 12px; padding: 2px 7px; font-size: 30px; font-weight: 600; color: var(--color-text-muted); }
+.planner-clock-time > button[aria-pressed="true"] { background: color-mix(in srgb, var(--color-primary) 12%, transparent); color: var(--color-primary); }
+.planner-clock-time > span { font-size: 28px; color: var(--color-text-muted); }
+.planner-clock-face { position: relative; isolation: isolate; width: min(100%, var(--planner-clock-size, 248px)); aspect-ratio: 1; margin: 8px auto 0; border-radius: 50%; background: color-mix(in srgb, var(--color-surface-2) 90%, transparent); touch-action: none; user-select: none; -webkit-user-select: none; outline-offset: 4px; }
+.planner-clock-face:focus-visible { outline: 2px solid var(--color-primary); }
+.planner-clock-number { position: absolute; z-index: 2; display: grid; place-items: center; width: 17.75%; height: 17.75%; border-radius: 50%; transform: translate(-50%, -50%); color: var(--color-text); font-size: 14px; font-variant-numeric: tabular-nums; }
+.planner-clock-number.is-inner { width: 13.7%; height: 13.7%; font-size: 11px; color: var(--color-text-muted); }
+.planner-clock-markers { position: absolute; inset: 0; z-index: 2; animation: planner-clock-phase-in 180ms ease-out both; }
+.planner-clock-number.is-selected { color: var(--color-primary-foreground, white); }
+.planner-clock-hand { position: absolute; z-index: 1; inset: 0; transform: rotate(var(--clock-angle)); pointer-events: none; }
+.planner-clock-hand::before { content: ''; position: absolute; left: calc(50% - 1px); bottom: 50%; width: 2px; height: var(--clock-reach); background: var(--color-primary); }
+.planner-clock-hand > span { position: absolute; left: 50%; top: calc(50% - var(--clock-reach)); width: 15.3%; height: 15.3%; border-radius: 50%; transform: translate(-50%, -50%); background: var(--color-primary); }
+.planner-clock-center { position: absolute; z-index: 1; top: 50%; left: 50%; width: 8px; height: 8px; border-radius: 50%; transform: translate(-50%, -50%); background: var(--color-primary); }
+.planner-clock-tick { position: absolute; width: 3px; height: 3px; border-radius: 50%; transform: translate(-50%, -50%); background: var(--color-text-muted); opacity: .45; pointer-events: none; }
+.planner-parameter.planner-parameter-compact { flex: 0 0 44px; min-width: 44px; width: 44px; max-width: 44px; justify-content: center; gap: 0; padding: 9px; }
+.planner-parameter.planner-parameter-compact > span { display: none; }
+.planner-parameter.planner-parameter-compact-date { min-width: 0; max-width: 116px; gap: 6px; padding-inline: 8px; }
+.planner-parameter.planner-parameter-compact-date > span { overflow: visible; text-overflow: clip; white-space: nowrap; }
+.planner-parameter.is-active { color: var(--color-primary); border-color: color-mix(in srgb, var(--color-primary) 24%, transparent); background: color-mix(in srgb, var(--color-primary) 11%, transparent); }
+
+.planner-sheet.planner-time-sheet {
+  --planner-clock-size: min(248px, max(156px, calc(var(--planner-viewport-height, 100dvh) - 170px)));
+  width: min(100%, 360px); max-height: calc(var(--planner-viewport-height, 100dvh) - 28px);
+}
+.planner-time-sheet .planner-sheet-body { padding: 6px 16px 8px; }
+.planner-time-sheet .planner-sheet-footer { padding: 8px 12px 12px; }
+.planner-time-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 5px; min-width: 0; margin-bottom: 5px; }
+.planner-time-endpoints { display: flex; align-items: center; gap: 2px; min-width: 0; font-variant-numeric: tabular-nums; }
+.planner-time-endpoint { min-height: 38px; padding: 5px 7px; border-radius: 10px; font-size: 14px; color: var(--color-text-muted); }
+.planner-time-endpoint[aria-pressed="true"] { background: color-mix(in srgb, var(--color-primary) 10%, transparent); color: var(--color-primary); }
+.planner-time-range-dash { color: var(--color-text-muted); font-size: 12px; }
+.planner-time-remove-end, .planner-time-add-end { display: inline-flex; align-items: center; justify-content: center; gap: 3px; min-height: 38px; padding: 5px; border-radius: 9px; color: var(--color-text-muted); font-size: 11px; }
+.planner-time-remove-end { width: 28px; }
+.planner-time-mode { display: flex; flex: 0 0 auto; align-items: center; gap: 2px; margin-left: auto; }
+.planner-time-mode button { display: grid; place-items: center; width: 32px; min-width: 32px; height: 36px; padding: 0; border-radius: 9px; color: var(--color-text-muted); }
+.planner-time-mode button[aria-pressed="true"] { background: color-mix(in srgb, var(--color-primary) 10%, transparent); color: var(--color-primary); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 14%, transparent); }
+.planner-time-control { animation: planner-clock-phase-in 180ms ease-out both; }
+.planner-time-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.planner-time-footer > button { min-height: 40px; }
+.planner-time-footer .planner-time-clear { flex: 1; min-width: 0; padding: 6px 2px; font-size: 12px; text-align: left; white-space: nowrap; }
+.planner-time-footer .planner-solid-button { flex: 0 0 auto; width: auto; min-width: 72px; padding: 8px 13px; }
+.planner-time-range-days { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 32px; margin-top: 3px; color: var(--color-text-muted); font-size: 11px; }
+.planner-time-range-days button { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; }
+.planner-time-range-days button:disabled { opacity: .3; }
+.planner-time-range-days > span { min-width: 68px; text-align: center; }
+.planner-time-range-error { margin: 0; color: var(--color-danger, #ef4444); font-size: 11px; text-align: center; }
+.planner-time-auto-complete { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 44px; margin-top: 4px; padding: 6px 8px; border: 1px solid var(--color-border); border-radius: 12px; text-align: left; font-size: 12px; color: var(--color-text-muted); }
+.planner-time-auto-complete[aria-checked="true"] { background: color-mix(in srgb, var(--color-primary) 10%, transparent); border-color: color-mix(in srgb, var(--color-primary) 24%, transparent); color: var(--color-primary); }
+.planner-time-switch-track { position: relative; flex: 0 0 34px; width: 34px; height: 20px; border-radius: 12px; background: color-mix(in srgb, var(--color-text-muted) 25%, transparent); }
+.planner-time-switch-track > span { position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: var(--color-text-muted); transition: transform 160ms, background-color 160ms; }
+.planner-time-auto-complete[aria-checked="true"] .planner-time-switch-track { background: color-mix(in srgb, var(--color-primary) 24%, transparent); }
+.planner-time-auto-complete[aria-checked="true"] .planner-time-switch-track > span { transform: translateX(14px); background: var(--color-primary); }
+
+.planner-time-wheels { --wheel-row-height: clamp(30px, calc((var(--planner-viewport-height, 100dvh) - 190px) / 5), 44px); display: flex; align-items: center; justify-content: center; gap: 18px; min-width: 0; padding: 9px 0; font-variant-numeric: tabular-nums; }
+.planner-time-wheel-column { width: 92px; min-width: 0; text-align: center; }
+.planner-time-wheel-label { display: block; color: var(--color-text-muted); font-size: 11px; padding-bottom: 8px; }
+.planner-time-wheel-window { position: relative; border-radius: 14px; }
+.planner-time-wheel-window::before { content: ''; position: absolute; pointer-events: none; z-index: 0; inset: calc(var(--wheel-row-height) * 2) 0 auto; height: var(--wheel-row-height); background: color-mix(in srgb, var(--color-primary) 12%, transparent); border-block: 1px solid color-mix(in srgb, var(--color-primary) 22%, transparent); border-radius: 10px; }
+.planner-time-wheel { position: relative; height: calc(var(--wheel-row-height) * 5); overflow-y: auto; padding-block: calc(var(--wheel-row-height) * 2); scrollbar-width: none; overscroll-behavior: contain; touch-action: pan-y; scroll-snap-type: y mandatory; scroll-behavior: auto; border-radius: 14px; outline-offset: 2px; mask-image: linear-gradient(transparent, #000 35%, #000 65%, transparent); }
+.planner-time-wheel::-webkit-scrollbar { display: none; }
+.planner-time-wheel > button { display: block; width: 100%; height: var(--wheel-row-height); min-height: var(--wheel-row-height); scroll-snap-align: center; color: var(--color-text-muted); font-size: 20px; border-radius: 10px; }
+.planner-time-wheel > button[aria-selected="true"] { color: var(--color-primary); font-size: 26px; font-weight: 600; }
+.planner-time-wheel-colon { padding-top: 16px; font-size: 28px; color: var(--color-text-muted); }
+
+@keyframes planner-clock-phase-in { from { opacity: .4; transform: scale(.985); } to { opacity: 1; transform: scale(1); } }
+@media (max-height: 740px) {
+  .planner-time-sheet.has-range { --planner-clock-size: 206px; }
+  .planner-time-sheet.has-range .planner-time-wheels { --wheel-row-height: 38px; }
+}
+@media (min-width: 640px) { .planner-sheet.planner-time-sheet { max-height: calc(var(--planner-viewport-height, 100dvh) - 48px); } }
+@media (prefers-reduced-motion: reduce) {
+  .planner-clock-markers, .planner-time-control { animation: none; }
+  .planner-time-switch-track > span { transition: none; }
+}

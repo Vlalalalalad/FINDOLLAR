@@ -1,0 +1,49 @@
+.planner-screen { padding-bottom: 4.5rem; }
+.planner-screen button:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.planner-screen details > summary::-webkit-details-marker { display: none; }
+.planner-error-toast { position: fixed; z-index: 90; left: 50%; bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); display: flex; align-items: center; gap: .75rem; width: min(calc(100vw - 2rem), 30rem); padding: .65rem .75rem; border: 1px solid color-mix(in srgb, var(--color-danger, #d8685b) 35%, var(--color-border)); border-radius: 14px; color: var(--color-text); background: color-mix(in srgb, var(--color-surface) 94%, transparent); box-shadow: 0 10px 30px rgb(0 0 0 / 18%); backdrop-filter: blur(18px); }
+.planner-error-toast p { min-width: 0; flex: 1; font-size: 12px; line-height: 1.35; }
+.planner-error-toast button { min-height: 36px; flex-shrink: 0; border-radius: 10px; padding: .45rem .7rem; color: var(--color-primary); background: color-mix(in srgb, var(--color-primary) 10%, transparent); font-size: 12px; font-weight: 600; }
+.planner-task { contain: layout style; }
+.planner-calendar { touch-action: pan-y pinch-zoom; user-select: none; padding-bottom: 1rem; border-bottom: 1px solid var(--color-border); }
+.planner-calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.planner-weekday { height: 1.75rem; display: grid; place-items: center; font-size: 11px; color: var(--color-text-muted); }
+.planner-calendar-day { height: 44px; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 10px; color: var(--color-text); transition: background-color 180ms ease; }
+.planner-date-number { display: grid; place-items: center; height: 30px; width: 30px; border: 1px solid transparent; border-radius: 50%; font-size: 13px; transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease; }
+.planner-calendar-day.is-outside { color: var(--color-text-muted); }
+.planner-calendar-day.is-outside .planner-date-number { opacity: .5; }
+.planner-calendar-day.is-today .planner-date-number { border-color: var(--color-primary); color: var(--color-primary); font-weight: 700; }
+.planner-calendar-day.is-selected .planner-date-number { background: var(--color-primary); color: white; border-color: var(--color-primary); font-weight: 700; opacity: 1; }
+.planner-calendar-day.is-drag-over { background: color-mix(in srgb, var(--color-primary) 15%, transparent); outline: 1px solid var(--color-primary); outline-offset: -1px; }
+.planner-date-dots { display: flex; align-items: center; justify-content: center; gap: 3px; height: 7px; }
+.planner-date-dots > span { width: 4px; height: 4px; border-radius: 50%; }
+.planner-day-empty { min-height: 72px; padding: 1rem 0; color: var(--color-text-muted); font-size: 13px; }
+.planner-timeline-task { position: relative; overflow: hidden; border-radius: 10px; contain: layout style; touch-action: pan-y pinch-zoom; }
+.planner-swipe-action { position: absolute; inset: 0; display: flex; align-items: center; gap: .5rem; padding: .75rem; color: var(--color-primary); background: color-mix(in srgb, var(--color-primary) 12%, transparent); font-size: 12px; opacity: var(--planner-swipe-progress, 0); }
+.planner-timeline-surface { display: flex; position: relative; background: var(--color-bg); transition: transform 180ms ease, color 180ms ease; }
+.planner-timeline-task:is([data-swipe-active], .has-revealed-actions) > .planner-timeline-surface { transform: translateX(var(--planner-swipe-x, 0px)); }
+[data-swipe-active] > .planner-timeline-surface { transition: none; }
+.planner-timeline-open { flex: 1; display: flex; align-items: center; gap: 12px; min-width: 0; height: 64px; text-align: left; padding-block: 10px; }
+.planner-timeline-time { width: 60px; flex-shrink: 0; font-size: 12px; color: var(--color-text-muted); display: flex; flex-direction: column; font-variant-numeric: tabular-nums; }
+.planner-timeline-end { font-size: 11px; }
+.planner-timeline-marker { width: 4px; height: 4px; border-radius: 50%; flex-shrink: 0; }
+.planner-timeline-title { min-width: 0; flex: 1; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; font-size: 14px; font-weight: 500; overflow-wrap: anywhere; color: var(--color-text); transition: color 180ms ease; }
+.planner-timeline-priority { flex-shrink: 0; }
+.planner-timeline-toggle { width: 44px; height: 44px; align-self: center; display: grid; place-items: center; flex-shrink: 0; border-radius: 10px; }
+.planner-timeline-toggle:disabled { opacity: .5; }
+.planner-timeline-check { width: 19px; height: 19px; display: grid; place-items: center; border-radius: 6px; border: 1px solid color-mix(in srgb, var(--color-text-muted) 50%, transparent); }
+.planner-timeline-check.is-checked { background: var(--color-primary); border-color: var(--color-primary); color: white; }
+.is-completed .planner-timeline-title { text-decoration: line-through; color: var(--color-text-muted); }
+.is-completed .planner-timeline-marker, .is-completed .planner-timeline-priority { opacity: .45; }
+.planner-swipe-hint { display: none; margin-top: 1rem; color: var(--color-text-muted); font-size: 11px; text-align: center; }
+.planner-screen .planner-add { position: fixed; z-index: 35; right: max(1rem, calc((100vw - 48rem) / 2)); bottom: calc(5rem + env(safe-area-inset-bottom, 0px)); width: 60px; height: 60px; padding: 0; border-radius: 50%; box-shadow: 0 4px 18px color-mix(in srgb, var(--color-primary) 24%, transparent); }
+@media (pointer: coarse) { .planner-swipe-hint { display: block; } }
+@media (hover: hover) { .planner-calendar-day:hover { background: color-mix(in srgb, var(--color-primary) 7%, transparent); } }
+@media (min-width: 640px) { .planner-calendar-day { height: 48px; } .planner-timeline-time { width: 76px; } }
+/* Navigation remains one strip with comfortable targets, including on 320px screens. */
+.planner-app-nav { overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; }
+.planner-app-nav::-webkit-scrollbar { display: none; }
+.planner-app-nav > a { min-width: 3.5rem; min-height: 3.5rem; flex-shrink: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .planner-screen *, .planner-notice { animation: none !important; transition: none !important; }
+}

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#101216" />
+    <meta name="description" content="FINDOLLAR — особистий фінансовий трекер та планувальник" />
+    <style>html{background:#F3EDE4;color-scheme:light}html.dark{background:#101216;color-scheme:dark}body{margin:0;background:inherit}</style>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <script>
+      ;(() => {
+          let stored = null
+          try {
+            stored = localStorage.getItem('findollar-theme')
+            if (!stored) {
+              for (let index = 0; index < localStorage.length; index += 1) {
+                const key = localStorage.key(index)
+                if (key && key.endsWith('-theme')) {
+                  const candidate = localStorage.getItem(key)
+                  if (candidate === 'light' || candidate === 'dark') { stored = candidate; break }
+                }
+              }
+            }
+          } catch { /* System theme when storage is blocked. */ }
+          const theme = stored === 'light' || stored === 'dark'
+            ? stored
+            : matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+          const background = theme === 'dark' ? '#101216' : '#F3EDE4'
+          document.documentElement.classList.toggle('dark', theme === 'dark')
+          document.documentElement.style.colorScheme = theme
+          document.documentElement.style.backgroundColor = background
+      })()
+    </script>
+    <link rel="icon" type="image/png" href="/icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <title>FINDOLLAR</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

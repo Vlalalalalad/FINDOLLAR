@@ -1,0 +1,164 @@
+.planner-calendar.planner-week-calendar {
+  --planner-calendar-row: 48px;
+  padding-bottom: 0;
+  touch-action: auto;
+}
+.planner-period-title {
+  min-height: 44px;
+  min-width: 0;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--color-text);
+  font-family: var(--font-display, inherit);
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: capitalize;
+  text-align: left;
+}
+.planner-period-title > span { min-width: 0; }
+.planner-calendar-control, .planner-period-title { transition: transform 120ms ease, background-color 120ms ease, opacity 120ms ease; }
+.planner-calendar-control[data-pressed="true"], .planner-period-title[data-pressed="true"] { transform: scale(.97); background: color-mix(in srgb, var(--color-primary) 18%, transparent); opacity: .78; }
+.planner-expand-chevron { flex-shrink: 0; color: var(--color-text-muted); transition: transform 200ms ease; }
+.planner-week-calendar.is-expanded .planner-expand-chevron { transform: rotate(180deg); }
+.planner-week-calendar .planner-calendar-window {
+  height: var(--planner-calendar-row);
+  overflow: hidden;
+  transition: height 200ms ease;
+}
+.planner-week-calendar.is-expanded .planner-calendar-window { height: calc(var(--planner-calendar-row) * 6); }
+.planner-week-calendar .planner-calendar-track {
+  transform: translate3d(var(--planner-period-drag, 0px), calc(var(--planner-selected-week) * var(--planner-calendar-row) * -1), 0);
+}
+.planner-week-calendar.is-resizing .planner-calendar-track { transition: transform 200ms ease; }
+.planner-week-calendar.is-expanded .planner-calendar-track { transform: translate3d(var(--planner-period-drag, 0px), 0, 0); }
+.planner-week-calendar[data-calendar-dragging] .planner-calendar-track { transition: none; }
+.planner-week-calendar .planner-calendar-day { height: var(--planner-calendar-row); }
+.planner-calendar-handle {
+  width: 100%;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+}
+.planner-calendar-handle > span {
+  width: 32px;
+  height: 4px;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--color-text-muted) 28%, transparent);
+  transform: translateY(var(--planner-calendar-pull, 0px));
+  transition: transform 180ms ease, background-color 180ms ease;
+}
+.planner-week-calendar[data-calendar-dragging] .planner-calendar-handle > span { transition: none; background: var(--color-primary); }
+.planner-day-list[data-calendar-dragging] { cursor: grabbing; }
+.planner-action-row .planner-timeline-surface { align-items: center; padding-inline: 10px; }
+.planner-timeline > div:not(.planner-action-row):not(:last-of-type)::after {
+  /* A painted in-flow strip survives zoom rasterization; borders can round
+     down independently beside a composited swipe surface. Keep it outside
+     the translated/clipped row so neither swipe nor reorder can cover it. */
+  content: '';
+  display: block;
+  height: 1px;
+  background: color-mix(in srgb, var(--color-text-muted) 18%, transparent);
+  pointer-events: none;
+}
+.planner-action-row .planner-timeline-open { gap: 10px; padding-right: 6px; }
+.planner-action-row .planner-timeline-time.is-unscheduled,
+.planner-time-placeholder { color: color-mix(in srgb, var(--color-text-muted) 65%, var(--color-bg)); }
+.planner-row-indicators { display: inline-flex; align-items: center; flex-shrink: 0; color: var(--color-text-muted); opacity: .7; }
+.planner-priority-static { display: grid; place-items: center; flex: 0 0 44px; height: 44px; }
+.planner-action-row .planner-row-priority { align-self: center; }
+.planner-action-row.is-completed .planner-row-priority { opacity: .6; }
+.planner-action-row .planner-row-controls { display: flex; flex-shrink: 0; align-items: center; gap: 6px; margin-left: 4px; }
+.planner-action-row .planner-row-control {
+  display: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  color: var(--color-text-muted);
+}
+.planner-action-row .planner-row-delete { display: none; border-left: 1px solid var(--color-border); border-radius: 0 10px 10px 0; color: var(--color-danger); }
+.planner-action-row .planner-row-control:disabled { opacity: .4; }
+.planner-action-row .planner-swipe-action {
+  pointer-events: none;
+  padding-inline: 12px;
+  white-space: nowrap;
+  clip-path: inset(0 clamp(0px, calc(100% - var(--planner-swipe-x, 0px)), 100%) 0 0);
+}
+.planner-action-row .planner-swipe-action > svg { flex-shrink: 0; }
+.planner-action-row[data-swipe-side="left"] .planner-swipe-action { opacity: 0; }
+.planner-swipe-left-actions {
+  position: absolute;
+  inset: 0 0 0 auto;
+  display: flex;
+  align-items: stretch;
+  width: var(--planner-reveal-width, 144px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+}
+.planner-swipe-left-actions > button {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 10px;
+  line-height: 1.25;
+}
+.planner-swipe-delete { color: var(--color-danger); background: color-mix(in srgb, var(--color-danger) 13%, var(--color-bg)); }
+.planner-swipe-quick { color: var(--color-primary); background: color-mix(in srgb, var(--color-primary) 14%, var(--color-bg)); }
+.planner-action-row.has-revealed-actions .planner-swipe-left-actions { opacity: 1; pointer-events: auto; }
+.planner-action-row[data-swipe-side="left"] .planner-swipe-left-actions { opacity: 1; }
+.planner-swipe-quick-feedback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-right: 22px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 18%, var(--color-bg));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+  clip-path: inset(0 0 0 clamp(0px, calc(100% + var(--planner-swipe-x, 0px)), 100%));
+}
+.planner-action-row[data-swipe-side="left"][data-swipe-ready] .planner-swipe-left-actions { opacity: 0; }
+.planner-action-row[data-swipe-side="left"][data-swipe-ready] .planner-swipe-quick-feedback { opacity: 1; }
+.planner-action-row .planner-timeline-surface { transition: transform 200ms ease, color 180ms ease; }
+.planner-action-row[data-swipe-active] .planner-timeline-surface { transition: none; }
+.planner-action-row.has-revealed-actions .planner-timeline-open { cursor: default; }
+@media (min-width: 640px) and (hover: hover) and (pointer: fine) {
+  .planner-action-row .planner-row-control { display: grid; }
+  .planner-action-row .planner-row-controls {
+    width: calc(var(--planner-action-count, 1) * 44px + (var(--planner-action-count, 1) - 1) * 6px);
+    margin-left: 12px;
+    opacity: 1;
+  }
+  .planner-action-row .planner-row-delete { display: grid; }
+  .planner-action-row .planner-row-control:hover, .planner-action-row .planner-timeline-toggle:hover { background: var(--color-surface-2); }
+  .planner-compact-row .planner-compact-toggle { margin-left: 12px; }
+}
+@media (max-width: 359px) {
+  .planner-period-title { font-size: 12px; }
+  .planner-action-row .planner-timeline-open { gap: 8px; }
+  .planner-action-row .planner-timeline-time { width: 48px; font-size: 11px; }
+}
+@media (max-width: 639px) {
+  .planner-timeline-item .planner-row-controls { display: none; }
+  .planner-timeline-item .planner-timeline-open { gap: 6px; padding-right: 0; }
+  .planner-timeline-item .planner-timeline-time { width: 48px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .planner-week-calendar *, .planner-action-row * { transition: none !important; animation: none !important; }
+}

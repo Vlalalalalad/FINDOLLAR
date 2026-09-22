@@ -1,0 +1,15 @@
+.planner-space-title { display: flex; align-items: center; gap: 10px; min-height: 44px; min-width: 0; text-align: left; color: var(--color-text); }
+.planner-space-title h1 { font-family: var(--font-display, inherit); font-size: 1.4rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.planner-space-title svg { flex-shrink: 0; color: var(--color-text-muted); transition: transform 180ms ease; }
+.planner-space-title[aria-expanded="true"] svg { transform: rotate(180deg); }
+.planner-space-title { transition: transform 120ms ease, background-color 120ms ease, opacity 120ms ease; border-radius: 10px; }
+.planner-space-title[data-pressed="true"] { transform: scale(.98); background: color-mix(in srgb, var(--color-primary) 14%, transparent); opacity: .8; }
+.planner-space-menu, .planner-quick-actions { display: flex; flex-direction: column; gap: 4px; }
+.planner-space-menu > button, .planner-quick-actions > button { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 10px 12px; border-radius: 12px; text-align: left; color: var(--color-text); font-size: 14px; transition: background-color 160ms; }
+.planner-space-menu > button:hover, .planner-space-menu > button[aria-current], .planner-quick-actions > button:hover { background: color-mix(in srgb, var(--color-primary) 10%, transparent); }
+.planner-space-menu > button:focus-visible, .planner-quick-actions > button:focus-visible, .planner-space-title:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.planner-quick-actions > button:disabled { opacity: .45; }
+.planner-screen.has-composer { padding-bottom: 210px; }
+.planner-nav-badge { display: inline-flex; min-width: 10px; justify-content: center; margin-left: 3px; font-size: 9px; line-height: 10px; font-variant-numeric: tabular-nums; }
+.planner-nav-badge.is-unread { width: 5px; min-width: 5px; height: 5px; margin-left: 4px; border-radius: 50%; background: currentColor; vertical-align: middle; }
+@media (prefers-reduced-motion: reduce) { .planner-space-menu > button, .planner-quick-actions > button { transition: none; } }

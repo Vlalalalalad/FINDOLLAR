@@ -1,0 +1,15 @@
+.planner-sheet.planner-date-wheel-sheet { width: min(100%, 376px); max-height: calc(var(--planner-viewport-height, 100dvh) - 28px); --date-wheel-row: clamp(18px, calc((var(--planner-viewport-height, 100dvh) - 166px) / 5), 40px); }
+.planner-date-wheel-sheet .planner-sheet-heading { padding: 4px 12px 2px; }
+.planner-date-wheel-sheet .planner-sheet-body { padding: 0 14px 4px; }
+.planner-date-wheel-sheet .planner-sheet-footer { padding: 6px 14px 10px; }
+.planner-date-wheels { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.55fr) minmax(0, 1fr); gap: 7px; font-variant-numeric: tabular-nums; }
+.planner-date-wheel-column { min-width: 0; text-align: center; }
+.planner-date-wheel-label { display: block; padding-bottom: 5px; color: var(--color-text-muted); font-size: 11px; }
+.planner-date-wheel-window { position: relative; border-radius: 12px; }
+.planner-date-wheel-window::before { content: ''; position: absolute; pointer-events: none; inset: calc(var(--date-wheel-row) * 2) 0 auto; height: var(--date-wheel-row); border-block: 1px solid color-mix(in srgb, var(--color-primary) 22%, transparent); border-radius: 9px; background: color-mix(in srgb, var(--color-primary) 11%, transparent); }
+.planner-date-wheel { position: relative; height: calc(var(--date-wheel-row) * 5); padding-block: calc(var(--date-wheel-row) * 2); overflow-y: auto; scrollbar-width: none; overscroll-behavior: contain; touch-action: pan-y; scroll-snap-type: y mandatory; scroll-behavior: auto; overflow-anchor: none; user-select: none; -webkit-user-select: none; border-radius: 12px; outline-offset: 2px; mask-image: linear-gradient(transparent, #000 35%, #000 65%, transparent); }
+.planner-date-wheel:focus-visible { outline: 2px solid var(--color-primary); }
+.planner-date-wheel::-webkit-scrollbar { display: none; }
+.planner-date-wheel-value { display: grid; place-items: center; width: 100%; height: var(--date-wheel-row); min-height: var(--date-wheel-row); scroll-snap-align: center; color: var(--color-text-muted); font-size: 16px; cursor: pointer; }
+.planner-date-wheel-value[data-selected="true"] { color: var(--color-primary); font-weight: 600; }
+@media (max-width: 359px) { .planner-date-wheel-value { font-size: 14px; } .planner-date-wheels { gap: 4px; } }

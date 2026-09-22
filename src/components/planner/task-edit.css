@@ -1,0 +1,111 @@
+.planner-task-editor {
+  max-width: 32rem;
+}
+
+.planner-task-editor .planner-sheet-body {
+  padding-top: 4px;
+}
+
+.planner-task-title-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+}
+
+.planner-task-status {
+  display: grid;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 12px;
+}
+
+.planner-task-status:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.planner-task-editor .planner-task-title {
+  min-width: 0;
+  min-height: 44px;
+  flex: 1;
+  border-color: transparent;
+  background: transparent;
+  padding: 8px 4px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.planner-task-editor .planner-task-description {
+  min-height: 64px;
+  max-height: 180px;
+  border-color: transparent;
+  background: transparent;
+  padding: 4px;
+  font-size: 16px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.planner-task-parameters {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 6px;
+}
+
+.planner-task-parameters > .planner-parameter,
+.planner-task-scope > .planner-parameter {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.planner-task-parameters .planner-parameter > span,
+.planner-task-scope .planner-parameter > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.planner-task-parameters .planner-parameter > svg {
+  flex-shrink: 0;
+}
+
+.planner-task-scope {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.planner-inline-editor.planner-task-editor {
+  position: relative;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  padding: 10px;
+  margin-block: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .04);
+  animation: planner-panel-in 180ms ease both;
+}
+.planner-inline-editor form, .planner-inline-editor fieldset { min-width: 0; min-inline-size: 0; }
+.planner-inline-editor .planner-task-title-row { padding-right: 38px; }
+.planner-inline-close { position: absolute; top: 10px; right: 6px; z-index: 1; }
+.planner-inline-editor .planner-task-title { font-size: 16px; }
+.planner-inline-editor .planner-task-description { min-height: 46px; padding-inline: 4px; }
+.planner-inline-footer { margin-top: 8px; }
+.planner-expanded-toolbar { display: flex; min-width: 0; align-items: flex-end; gap: 4px; }
+.planner-expanded-toolbar .planner-task-parameters { flex: 1; gap: 0; }
+.planner-expanded-toolbar .planner-parameter { border: 0; background: transparent; }
+.planner-expanded-toolbar .planner-parameter-icon { width: 44px; min-width: 44px; padding: 0; justify-content: center; }
+.planner-expanded-toolbar .planner-parameter-icon.is-set { color: var(--color-primary); }
+.planner-expanded-toolbar .planner-parameter.planner-parameter-compact-date { flex: 0 0 64px; min-width: 64px; max-width: 64px; padding-inline: 2px; gap: 4px; font-size: 11px; }
+@media (prefers-reduced-motion: reduce) { .planner-inline-editor { animation: none; } }

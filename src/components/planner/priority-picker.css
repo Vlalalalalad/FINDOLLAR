@@ -1,0 +1,56 @@
+.planner-priority-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  transition: background-color 160ms ease, opacity 160ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.planner-priority-trigger:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
+.planner-priority-trigger:disabled { opacity: .45; }
+.planner-priority-sheet { width: min(100%, 340px); }
+.planner-priority-sheet .planner-sheet-body { padding: 4px 12px 12px; }
+.planner-priority-options { display: flex; flex-direction: column; gap: 3px; }
+.planner-priority-options > button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 46px;
+  padding: 10px 12px;
+  text-align: left;
+  border-radius: 10px;
+  color: var(--color-text);
+  font-size: 14px;
+}
+.planner-priority-options > button > span { flex: 1; }
+.planner-priority-options > button > svg { flex-shrink: 0; }
+.planner-priority-options > button[aria-pressed="true"] { background: color-mix(in srgb, var(--color-primary) 9%, transparent); }
+.planner-priority-options > button > svg:last-child:not(:first-child) { color: var(--color-primary); }
+.planner-priority-status, .planner-priority-error { margin: 8px 12px 0; font-size: 12px; overflow-wrap: anywhere; }
+.planner-priority-status { display: flex; align-items: center; gap: 6px; color: var(--color-text-muted); }
+.planner-priority-error { color: var(--color-danger); }
+.planner-priority-status svg { animation: priority-pending 1s linear infinite; }
+@keyframes priority-pending { to { transform: rotate(360deg); } }
+@media (min-width: 640px) and (hover: hover) and (pointer: fine) {
+  .planner-priority-trigger:hover:not(:disabled), .planner-priority-options > button:hover:not(:disabled) { background: var(--color-surface-2); }
+  .planner-sheet-layer:has(> .planner-priority-sheet) > .planner-sheet-scrim { background: transparent; animation: none; }
+  .planner-priority-sheet {
+    position: fixed;
+    left: var(--priority-popover-left, 12px);
+    top: var(--priority-popover-top, 12px);
+    width: 224px;
+    border-radius: 15px;
+    animation: priority-popover-in 160ms ease both;
+  }
+  .planner-priority-sheet .planner-sheet-heading { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); }
+  .planner-priority-sheet .planner-sheet-heading > button { display: none; }
+  .planner-priority-sheet .planner-sheet-body { padding: 7px; }
+  .planner-priority-options > button { min-height: 44px; }
+  @keyframes priority-popover-in { from { opacity: 0; } to { opacity: 1; } }
+}
+@media (prefers-reduced-motion: reduce) {
+  .planner-priority-trigger, .planner-priority-sheet, .planner-priority-status svg { animation: none !important; transition: none !important; }
+}
