@@ -88,3 +88,4 @@ tests/                       Automated regression tests
 ## Repository safety
 
 Local environment files, build output, dependencies, Vercel state, caches, logs, and editor files are excluded by `.gitignore`. `.env.example` contains variable names only and is safe to commit.
+
