@@ -4,6 +4,8 @@ import { ACCOUNT_SESSIONS_KEY, accountLabel, accountMetadata, readAccountSession
 import { deliberateLeftSwipeThreshold } from '../src/lib/plannerGestures.ts'
 import { accountActionAt } from '../src/lib/accountPressHit.ts'
 import { localTimeKey } from '../src/lib/planner.ts'
+import { categoryPresentation, transactionCategoryName } from '../src/lib/transactions.ts'
+import { profileDestinationForTap } from '../src/lib/navigationState.ts'
 
 test('account label uses the saved profile full_name and falls back safely', () => {
   assert.equal(accountLabel({ id: '1', email: 'mail@example.com', full_name: '  Основний  ' }), 'Основний')
@@ -85,4 +87,27 @@ test('drag hit test follows elementFromPoint across add and account rows and cle
 test('local time keys preserve the device hour and exact minute', () => {
   assert.equal(localTimeKey(new Date(2026, 8, 23, 3, 12, 59)), '03:12')
   assert.equal(localTimeKey(new Date(2026, 8, 23, 15, 37, 1)), '15:37')
+})
+
+test('missing categories merge into the existing Other category for each transaction type', () => {
+  const categories = [
+    { id: 'salary', type: 'income', name: 'Зарплата', color: '#0E8F6E', is_default: true },
+    { id: 'other-income', type: 'income', name: 'Інший дохід', color: '#6B6A63', is_default: true },
+    { id: 'food', type: 'expense', name: 'Їжа', color: '#C9772E', is_default: true },
+    { id: 'other-expense', type: 'expense', name: 'Інші витрати', color: '#6B6A63', is_default: true },
+  ]
+  assert.deepEqual(categoryPresentation(categories, 'expense', null), {
+    id: 'other-expense', key: 'other-expense', name: 'Інші витрати', color: '#6B6A63',
+  })
+  assert.equal(categoryPresentation(categories, 'expense', 'other-expense').key, 'other-expense')
+  assert.equal(categoryPresentation(categories, 'income', null).name, 'Інший дохід')
+  assert.equal(categoryPresentation(categories, 'expense', 'food').name, 'Їжа')
+  assert.equal(transactionCategoryName(categories, 'transfer', null), '')
+})
+
+test('Profile tab restores its last tool and a repeated tap returns home', () => {
+  assert.equal(profileDestinationForTap('/plans', '/calculator'), '/calculator')
+  assert.equal(profileDestinationForTap('/calculator', '/calculator'), '/profile')
+  assert.equal(profileDestinationForTap('/plans', '/statistics'), '/statistics')
+  assert.equal(profileDestinationForTap('/plans', '/profile'), '/profile')
 })

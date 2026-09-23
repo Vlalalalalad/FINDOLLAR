@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef } from 'react'
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
   HandCoins,
@@ -16,6 +16,7 @@ import { usePlannerWorkspaceState } from '../../hooks/usePlannerWorkspace'
 import { PlannerReminders, PlannerNavBadge } from '../planner/PlannerReminders'
 import { PlannerAutoComplete } from '../planner/PlannerAutoComplete'
 import { useAccountSwitcher } from '../AccountSwitcher'
+import { isProfileToolPath, PROFILE_HOME_PATH, profileDestinationForTap } from '../../lib/navigationState'
 import '../planner/planner.css'
 
 const NAV_ITEMS = [
@@ -36,13 +37,16 @@ function Brand() {
 export function AppLayout() {
   const { theme, toggleTheme, hideBalances, toggleHideBalances } = useTheme()
   const { pathname } = useLocation()
+  const navigate = useNavigate()
   const mainRef = useRef<HTMLElement>(null)
+  const lastProfilePath = useRef(PROFILE_HOME_PATH)
   const [, requestPlansHome] = usePlannerWorkspaceState('home-request', 0)
   const accountSwitcher = useAccountSwitcher()
 
   // Other tabs start at the top. Plans restores its own per-section offset
   // after its retained filters and list have rendered.
   useLayoutEffect(() => {
+    if (pathname === PROFILE_HOME_PATH || isProfileToolPath(pathname)) lastProfilePath.current = pathname
     if (pathname !== '/plans') mainRef.current?.scrollTo({ top: 0, left: 0, behavior: 'auto' })
   }, [pathname])
 
@@ -83,10 +87,20 @@ export function AppLayout() {
               aria-expanded={item.to === '/profile' ? accountSwitcher.open : undefined}
               style={item.to === '/profile' ? { touchAction: 'none', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none' } : undefined}
               onClick={event => {
-                if (item.to !== '/plans' || pathname !== '/plans' || event.button !== 0
-                  || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
-                event.preventDefault()
-                requestPlansHome(value => value + 1)
+                if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+                if (item.to === '/plans' && pathname === '/plans') {
+                  event.preventDefault()
+                  requestPlansHome(value => value + 1)
+                  return
+                }
+                if (item.to === PROFILE_HOME_PATH) {
+                  const destination = profileDestinationForTap(pathname, lastProfilePath.current)
+                  if (destination !== PROFILE_HOME_PATH || pathname !== PROFILE_HOME_PATH) {
+                    event.preventDefault()
+                    lastProfilePath.current = destination
+                    navigate(destination)
+                  }
+                }
               }}
               className={({ isActive }) =>
                 clsx(

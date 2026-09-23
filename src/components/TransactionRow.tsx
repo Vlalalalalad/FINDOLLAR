@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import type { ReactNode } from 'react'
-import type { Mood, Transaction } from '../types/database'
+import type { Mood, Transaction, TransactionType } from '../types/database'
 import { formatMoney, isCrypto } from '../lib/currency'
 import { isDebtTransaction } from '../lib/transactions'
 
@@ -13,10 +13,10 @@ const MOOD_EMOJI: Record<Mood, string> = { great: '😊', neutral: '😐', regre
 // тип, щоб підпис ніколи не був порожнім.
 export function transactionTitle(
   t: Pick<Transaction, 'category_id' | 'type' | 'debt_id' | 'description' | 'tags'>,
-  categoryName: (id: string | null) => string
+  categoryName: (id: string | null, type: TransactionType) => string
 ): string {
   if (isDebtTransaction(t)) return 'Борги'
-  const cat = categoryName(t.category_id)
+  const cat = categoryName(t.category_id, t.type)
   if (cat) return cat
   if (t.type === 'income') return 'Дохід'
   if (t.type === 'expense') return 'Витрата'
@@ -32,7 +32,7 @@ export function TransactionRow({
   onClick,
 }: {
   t: Transaction
-  categoryName: (id: string | null) => string
+  categoryName: (id: string | null, type: TransactionType) => string
   accountLabel: (id: string | null, nameSnapshot: string | null) => ReactNode
   hideBalances: boolean
   dateLabel?: string

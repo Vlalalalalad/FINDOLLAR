@@ -3,6 +3,7 @@ import { Button, Input, Label, Modal, Select, Textarea } from './ui'
 import { isCrypto } from '../lib/currency'
 import { toLocalDatetimeInputValue, localInputValueToIso } from '../lib/datetime'
 import type { Account, Category, Mood, Transaction, TransactionType } from '../types/database'
+import { categoryPresentation } from '../lib/transactions'
 
 const MOODS: { value: Mood; emoji: string; label: string }[] = [
   { value: 'great', emoji: '🟢', label: 'Кайф / заслужено' },
@@ -43,6 +44,10 @@ export function TransactionEditModal({
 }) {
   const [form, setForm] = useState(emptyForm)
   const initialized = useRef<string | null>(null)
+  const typeCategories = form.type === 'transfer' ? [] : categories.filter(category => category.type === form.type)
+  const fallback = form.type === 'transfer' ? null : categoryPresentation(categories, form.type, null)
+  const categoryValue = typeCategories.some(category => category.id === form.category_id)
+    ? form.category_id : fallback?.id ?? ''
 
   // Форма перезаповнюється щоразу, коли модалку відкривають — або
   // даними операції, що редагується, або порожнім бланком із
@@ -108,7 +113,7 @@ export function TransactionEditModal({
             <button
               type="button"
               key={type}
-              onClick={() => setForm(f => ({ ...f, type }))}
+              onClick={() => setForm(f => ({ ...f, type, category_id: type === f.type ? f.category_id : '' }))}
               className={`rounded-lg border px-3 py-2 font-display text-sm font-semibold ${
                 form.type === type ? 'border-primary bg-primary/10 text-primary' : 'border-border text-text-muted'
               }`}
@@ -169,15 +174,13 @@ export function TransactionEditModal({
         {form.type !== 'transfer' && (
           <div className="motion-soft-enter">
             <Label>Категорія</Label>
-            <Select value={form.category_id} onChange={e => setForm(f => ({ ...f, category_id: e.target.value }))}>
-              <option value="">Без категорії</option>
-              {categories
-                .filter(c => c.type === form.type)
-                .map(c => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
+            <Select value={categoryValue} onChange={e => setForm(f => ({ ...f, category_id: e.target.value }))}>
+              {!fallback?.id && <option value="">{fallback?.name}</option>}
+              {typeCategories.map(category => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
             </Select>
           </div>
         )}

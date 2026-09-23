@@ -35,6 +35,7 @@ import { TransactionRow } from './TransactionRow'
 import { TransactionDetail } from './TransactionDetail'
 import { TransactionEditModal } from './TransactionEditModal'
 import { CURRENCIES, formatMoney, isCrypto } from '../lib/currency'
+import { transactionCategoryName } from '../lib/transactions'
 import { usePresence } from '../hooks/usePresence'
 import type { Account, AccountType, Category, Transaction } from '../types/database'
 
@@ -136,7 +137,7 @@ export function AccountsSection({
     }
   }
   const detailTransaction = transactions.find(t => t.id === detailId) ?? null
-  const categoryName = (id: string | null) => categories.find(c => c.id === id)?.name ?? ''
+  const categoryName = (id: string | null, type: Transaction['type']) => transactionCategoryName(categories, type, id)
   const accountLabel = (id: string | null, nameSnapshot: string | null) => {
     const acc = accounts.find(a => a.id === id)
     if (acc) return <span>{acc.name}</span>

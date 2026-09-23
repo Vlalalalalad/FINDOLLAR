@@ -4,6 +4,7 @@ import clsx from 'clsx'
 import { Modal, useConfirm } from './ui'
 import { transactionTitle } from './TransactionRow'
 import { formatMoney, isCrypto } from '../lib/currency'
+import { transactionCategoryName } from '../lib/transactions'
 import { useTheme } from '../context/ThemeContext'
 import {
   drawGlassPanel,
@@ -349,7 +350,7 @@ export function TransactionDetail({
   const sharingRef = useRef(false)
 
   const t = transaction
-  const categoryName = (id: string | null) => categories.find(c => c.id === id)?.name ?? ''
+  const categoryName = (id: string | null, type: Transaction['type']) => transactionCategoryName(categories, type, id)
   const title = t ? transactionTitle(t, categoryName) : ''
   const account = t ? accounts.find(a => a.id === t.account_id) : undefined
   const accountDisplayName = account?.name ?? t?.account_name_snapshot ?? 'видалений актив'

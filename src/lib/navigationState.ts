@@ -1,6 +1,18 @@
 const PATHS = new Set(['/', '/plans', '/debts', '/profile', '/accounts', '/transactions', '/categories', '/calculator', '/statistics'])
+export const PROFILE_HOME_PATH = '/profile'
+const PROFILE_TOOL_PATHS = new Set(['/accounts', '/transactions', '/categories', '/calculator', '/statistics'])
 const keyFor = (id: string) => `findollar:navigation:v1:${id}`
 export type NavigationState = { path: string; plans: Record<string, unknown> }
+
+export function isProfileToolPath(pathname: string): boolean {
+  return PROFILE_TOOL_PATHS.has(pathname)
+}
+
+export function profileDestinationForTap(pathname: string, lastProfilePath: string): string {
+  if (isProfileToolPath(pathname)) return PROFILE_HOME_PATH
+  return isProfileToolPath(lastProfilePath) ? lastProfilePath : PROFILE_HOME_PATH
+}
+
 const permittedPlanValue = (key: string, value: unknown) =>
   key === 'navigation:space' ? typeof value === 'string' && value.length > 0 && value.length <= 128
     : key === 'navigation:browsing' || key === 'calendar:expanded' ? typeof value === 'boolean'

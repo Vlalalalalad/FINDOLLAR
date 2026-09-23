@@ -8,7 +8,7 @@ import { useCategories } from '../hooks'
 import { Card, Input, Label } from '../components/ui'
 import { convertToBase, formatAmount, formatMoney } from '../lib/currency'
 import { startOfWeek } from '../lib/datetime'
-import { isDebtTransaction } from '../lib/transactions'
+import { categoryPresentation, isDebtTransaction } from '../lib/transactions'
 import { useTheme } from '../context/ThemeContext'
 
 type Period = 'thisWeek' | 'thisMonth' | 'lastMonth' | 'thisYear' | 'allTime' | 'custom'
@@ -81,11 +81,10 @@ export function Statistics() {
         missing = true
         return
       }
-      const cat = categories.find(c => c.id === t.category_id)
-      const key = cat?.id ?? 'none'
-      const existing = map.get(key)
+      const category = categoryPresentation(categories, kind, t.category_id)
+      const existing = map.get(category.key)
       if (existing) existing.amount += converted
-      else map.set(key, { name: cat?.name ?? 'Без категорії', color: cat?.color ?? '#6B6A63', amount: converted })
+      else map.set(category.key, { name: category.name, color: category.color, amount: converted })
     })
 
     const sorted = Array.from(map.values()).sort((a, b) => b.amount - a.amount)

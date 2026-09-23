@@ -9,7 +9,7 @@ import { TransactionDetail } from '../components/TransactionDetail'
 import { TransactionEditModal } from '../components/TransactionEditModal'
 import { formatMoney } from '../lib/currency'
 import { dateGroupLabel } from '../lib/datetime'
-import { isDebtTransaction } from '../lib/transactions'
+import { isDebtTransaction, transactionCategoryName } from '../lib/transactions'
 import { useTheme } from '../context/ThemeContext'
 import type { Transaction, TransactionType } from '../types/database'
 
@@ -118,7 +118,7 @@ export function Transactions() {
     if (acc) return <span>{acc.name}</span>
     return <span className="text-text-muted/70">{nameSnapshot ?? 'видалений актив'}</span>
   }
-  const categoryName = (id: string | null) => categories.find(c => c.id === id)?.name ?? ''
+  const categoryName = (id: string | null, type: Transaction['type']) => transactionCategoryName(categories, type, id)
 
   // "Скасувати" не створює новий рядок — просто позначає цей самий
   // прапорцем is_cancelled. Баланс і статистика рахують операції

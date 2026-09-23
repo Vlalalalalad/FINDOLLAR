@@ -20,7 +20,7 @@ import { AccountsSection } from '../components/AccountsSection'
 import { TodayPlansWidget } from '../components/planner/TodayPlansWidget'
 import { CURRENCIES, convertToBase, formatAmount, formatMoney } from '../lib/currency'
 import { startOfWeek } from '../lib/datetime'
-import { isDebtTransaction } from '../lib/transactions'
+import { categoryPresentation, isDebtTransaction } from '../lib/transactions'
 import { useTheme } from '../context/ThemeContext'
 import { usePresence } from '../hooks/usePresence'
 import type { Mood } from '../types/database'
@@ -136,11 +136,10 @@ export function Dashboard() {
       else expense += converted
 
       if (t.type === widgetConfig.kind) {
-        const cat = categories.find(c => c.id === t.category_id)
-        const key = cat?.id ?? 'none'
-        const existing = catMap.get(key)
+        const category = categoryPresentation(categories, t.type, t.category_id)
+        const existing = catMap.get(category.key)
         if (existing) existing.amount += converted
-        else catMap.set(key, { name: cat?.name ?? 'Без категорії', color: cat?.color ?? '#6B6A63', amount: converted })
+        else catMap.set(category.key, { name: category.name, color: category.color, amount: converted })
       }
     })
 
