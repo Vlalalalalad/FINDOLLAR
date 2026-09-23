@@ -278,12 +278,17 @@ a, button {
 }
 
 .account-switcher-action {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
   transition:
     background-color 100ms ease-out,
     transform 100ms ease-out;
 }
 
-.account-switcher-action[data-drag-target='true'] {
+.account-switcher-action[data-drag-target='true'],
+.account-switcher-action:active {
   background-color: color-mix(in srgb, var(--color-primary) 22%, var(--color-surface));
   transform: scale(0.985);
 }

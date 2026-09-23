@@ -1,6 +1,7 @@
 import { useEffect, useRef, type MouseEvent, type PointerEvent } from 'react'
 
 type Gesture = {
+  origin: 'trigger' | 'menu'
   pointerId: number
   startX: number
   startY: number
@@ -8,7 +9,7 @@ type Gesture = {
   clientY: number
   held: boolean
   dragTarget: string | null
-  element: HTMLAnchorElement
+  element: HTMLElement
 }
 
 /** A normal click remains a link; only touch/pen hold enters drag selection. */
@@ -25,10 +26,17 @@ export function useAccountPress({ onOpen, onHover, onSelect, getActionAt }: {
   const timer = useRef<ReturnType<typeof setTimeout>>()
   const suppressClick = useRef(false)
   const suppressClearTimer = useRef<ReturnType<typeof setTimeout>>()
+  const suppressMenuClick = useRef(false)
+  const suppressMenuClearTimer = useRef<ReturnType<typeof setTimeout>>()
 
   const releaseClickSuppressionSoon = () => {
     clearTimeout(suppressClearTimer.current)
     suppressClearTimer.current = setTimeout(() => { suppressClick.current = false }, 500)
+  }
+
+  const releaseMenuClickSuppressionSoon = () => {
+    clearTimeout(suppressMenuClearTimer.current)
+    suppressMenuClearTimer.current = setTimeout(() => { suppressMenuClick.current = false }, 500)
   }
 
   const stop = () => {
@@ -55,6 +63,7 @@ export function useAccountPress({ onOpen, onHover, onSelect, getActionAt }: {
     clearTimeout(suppressClearTimer.current)
     suppressClick.current = false
     const current: Gesture = {
+      origin: 'trigger',
       pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
@@ -75,6 +84,27 @@ export function useAccountPress({ onOpen, onHover, onSelect, getActionAt }: {
         if (gesture.current === current && current.held) updateDragTarget(current, current.clientX, current.clientY)
       })
     }, 450)
+  }
+
+  const startMenuDrag = (event: PointerEvent<HTMLButtonElement>, action: string) => {
+    if (gesture.current || !event.isPrimary || event.button !== 0
+      || (event.pointerType !== 'touch' && event.pointerType !== 'pen')) return
+    clearTimeout(suppressMenuClearTimer.current)
+    suppressMenuClick.current = true
+    const current: Gesture = {
+      origin: 'menu',
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      clientX: event.clientX,
+      clientY: event.clientY,
+      held: true,
+      dragTarget: action,
+      element: event.currentTarget,
+    }
+    gesture.current = current
+    callbacks.current.onHover(action)
+    try { event.currentTarget.setPointerCapture(event.pointerId) } catch { /* Window listeners still track this pointer. */ }
   }
 
   useEffect(() => {
@@ -103,16 +133,19 @@ export function useAccountPress({ onOpen, onHover, onSelect, getActionAt }: {
       const selected = current.dragTarget
       stop()
       callbacks.current.onHover(null)
+      if (current.origin === 'menu') releaseMenuClickSuppressionSoon()
       releaseClickSuppressionSoon()
       if (selected) callbacks.current.onSelect(selected)
     }
     const interrupt = (pointerId?: number) => {
       const current = gesture.current
       if (!current || (pointerId !== undefined && current.pointerId !== pointerId)) return
-      suppressClick.current = true
+      if (current.origin === 'trigger') suppressClick.current = true
+      else suppressMenuClick.current = true
       stop()
       callbacks.current.onHover(null)
-      releaseClickSuppressionSoon()
+      if (current.origin === 'trigger') releaseClickSuppressionSoon()
+      else releaseMenuClickSuppressionSoon()
     }
     const pointerCancel = (event: globalThis.PointerEvent) => interrupt(event.pointerId)
     const blur = () => interrupt()
@@ -129,6 +162,7 @@ export function useAccountPress({ onOpen, onHover, onSelect, getActionAt }: {
       window.removeEventListener('blur', blur)
       document.removeEventListener('visibilitychange', visibilityChange)
       clearTimeout(suppressClearTimer.current)
+      clearTimeout(suppressMenuClearTimer.current)
       stop()
     }
   }, [])
@@ -153,6 +187,21 @@ export function useAccountPress({ onOpen, onHover, onSelect, getActionAt }: {
     },
     onContextMenu: (event: MouseEvent<HTMLAnchorElement>) => {
       if (gesture.current || window.matchMedia('(pointer: coarse)').matches) event.preventDefault()
+    },
+    onMenuPointerDown: startMenuDrag,
+    onMenuLostPointerCapture: (event: PointerEvent<HTMLButtonElement>) => {
+      const current = gesture.current
+      if (!current || current.origin !== 'menu' || current.pointerId !== event.pointerId) return
+      suppressMenuClick.current = true
+      stop()
+      callbacks.current.onHover(null)
+      releaseMenuClickSuppressionSoon()
+    },
+    onMenuClickCapture: (event: MouseEvent<HTMLElement>) => {
+      if (!suppressMenuClick.current) return
+      event.preventDefault()
+      event.stopPropagation()
+      suppressMenuClick.current = false
     },
   }
 }
