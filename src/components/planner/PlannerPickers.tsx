@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Clock3, List, Minus, Plus, Tag, X } from 'lucide-react'
 import clsx from 'clsx'
-import { addDays, addMonths, calendarDays, localDateKey, parseLocalDate } from '../../lib/planner'
+import { addDays, addMonths, calendarDays, localDateKey, localTimeKey, parseLocalDate } from '../../lib/planner'
 import { PlannerSheet } from './PlannerSheet'
 import { ClockPicker } from './ClockPicker'
 import { WheelPicker } from './WheelPicker'
@@ -106,13 +106,13 @@ export function TimePicker({ value, onChange, duration = null, onDurationChange,
   const { user } = useAuth()
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<PlannerTimeMode>(() => readPlannerTimeMode(user?.id))
-  const [start, setStart] = useState('09:00')
+  const [start, setStart] = useState(() => localTimeKey())
   const [end, setEnd] = useState<string | null>(null)
   const [extraDays, setExtraDays] = useState(0)
   const [endpoint, setEndpoint] = useState<'start' | 'end'>('start')
   const [autoCompleteDraft, setAutoCompleteDraft] = useState(false)
   const show = () => {
-    const nextStart = value ?? '09:00'
+    const nextStart = value ?? localTimeKey()
     const range = duration ? rangeFromDuration(nextStart, duration) : null
     setStart(nextStart)
     setEnd(range?.end ?? null)

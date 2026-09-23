@@ -81,7 +81,7 @@ export function AppLayout() {
               data-account-trigger={item.to === '/profile' ? '' : undefined}
               aria-haspopup={item.to === '/profile' ? 'dialog' : undefined}
               aria-expanded={item.to === '/profile' ? accountSwitcher.open : undefined}
-              style={item.to === '/profile' ? { touchAction: 'none', WebkitTouchCallout: 'none' } : undefined}
+              style={item.to === '/profile' ? { touchAction: 'none', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none' } : undefined}
               onClick={event => {
                 if (item.to !== '/plans' || pathname !== '/plans' || event.button !== 0
                   || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return

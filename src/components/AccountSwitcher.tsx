@@ -4,6 +4,7 @@ import { Check, Plus, X } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useAccountPress } from '../hooks/useAccountPress'
 import { useOverlayBack } from '../hooks/useOverlayBack'
+import { usePresence } from '../hooks/usePresence'
 import { accountLabel, type SavedAccount } from '../lib/accountSessions'
 import { accountActionAt } from '../lib/accountPressHit'
 import { Button, Card, Input, Label, Modal, useConfirm } from './ui'
@@ -69,12 +70,15 @@ export function AccountManager({ compact = false }: { compact?: boolean }) {
 
 export function useAccountSwitcher() {
   const { accounts, user, switchAccount } = useAuth()
-  const [anchor, setAnchor] = useState<DOMRect | null>(null), [hoveredAction, setHoveredAction] = useState<string | null>(null)
+  const [anchor, setAnchor] = useState<DOMRect | null>(null), [dragTarget, setDragTarget] = useState<string | null>(null)
   const [menuAccounts, setMenuAccounts] = useState<SavedAccount[]>([])
   const [adding, setAdding] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState('')
   const pending = useRef(false)
   const panel = useRef<HTMLDivElement>(null)
-  const close = () => { if (!pending.current) { setAnchor(null); setHoveredAction(null) } }
+  const menuPresent = usePresence(!!anchor, 140)
+  const renderedAnchor = useRef<DOMRect | null>(null)
+  if (anchor) renderedAnchor.current = anchor
+  const close = () => { if (!pending.current) { setAnchor(null); setDragTarget(null) } }
   useOverlayBack(!!anchor, close)
   const select = async (id: string) => {
     if (pending.current) return
@@ -85,41 +89,52 @@ export function useAccountSwitcher() {
     finally { pending.current = false; setBusy(false) }
   }
   const selectAction = (action: string) => {
-    if (action === 'add') { setAnchor(null); setHoveredAction(null); setAdding(true); return }
+    if (action === 'add') { setAnchor(null); setDragTarget(null); setAdding(true); return }
     if (action.startsWith('account:')) {
       setAnchor(null)
-      setHoveredAction(null)
+      setDragTarget(null)
       void select(action.slice('account:'.length))
     }
   }
   const bind = useAccountPress({
-    onOpen: rect => { setError(''); setHoveredAction(null); setMenuAccounts(accounts); setAnchor(rect) },
-    onHover: setHoveredAction,
+    onOpen: rect => { setError(''); setDragTarget(null); setMenuAccounts(accounts); setAnchor(rect) },
+    onHover: setDragTarget,
     onSelect: selectAction,
     getActionAt: (x, y) => accountActionAt(panel.current, x, y),
   })
   useEffect(() => {
     if (!anchor) return
     const outside = (event: globalThis.PointerEvent) => {
-      if (event.target instanceof Element && !panel.current?.contains(event.target) && !event.target.closest('[data-account-trigger]') && !pending.current) setAnchor(null)
+      if (event.target instanceof Element && !panel.current?.contains(event.target)
+        && !event.target.closest('[data-account-trigger]') && !pending.current) {
+        setAnchor(null)
+        setDragTarget(null)
+      }
     }
     document.addEventListener('pointerdown', outside)
-    const escape = (event: KeyboardEvent) => { if (event.key === 'Escape' && !pending.current) setAnchor(null) }
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !pending.current) { setAnchor(null); setDragTarget(null) }
+    }
     document.addEventListener('keydown', escape)
     return () => { document.removeEventListener('pointerdown', outside); document.removeEventListener('keydown', escape) }
   }, [anchor])
+  const menuAnchor = anchor ?? renderedAnchor.current
   const overlay = <>
-    {anchor && createPortal(<div ref={panel} role="dialog" aria-label="Перемкнути акаунт" onKeyDown={event => { if (event.key === 'Escape') close() }}
-      className="fixed z-[70] overflow-y-auto rounded-2xl border border-border bg-surface/95 p-1.5 text-text shadow-xl backdrop-blur-xl"
-      style={{ right: Math.max(12, window.innerWidth - anchor.right), bottom: window.innerHeight - anchor.top + 8, width: 'min(256px, calc(100vw - 36px))', maxHeight: Math.max(80, anchor.top - 20) }}>
-      <button type="button" data-account-action="add" disabled={busy}
-        className={`flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-primary ${hoveredAction === 'add' ? 'bg-primary/25' : 'hover:bg-surface-2'}`}
+    {menuPresent && menuAnchor && createPortal(<div ref={panel} role="dialog" aria-label="Перемкнути акаунт" aria-hidden={!anchor}
+      data-state={anchor ? 'open' : 'closed'} onKeyDown={event => { if (event.key === 'Escape') close() }}
+      className="account-switcher-menu fixed z-[70] overflow-y-auto rounded-2xl border border-border bg-surface/95 p-1.5 text-text shadow-xl backdrop-blur-xl"
+      style={{ right: Math.max(12, window.innerWidth - menuAnchor.right), bottom: window.innerHeight - menuAnchor.top + 8, width: 'min(256px, calc(100vw - 36px))', maxHeight: Math.max(80, menuAnchor.top - 20) }}>
+      <button type="button" data-account-switcher-action="add" data-drag-target={dragTarget === 'add' || undefined} disabled={busy}
+        className="account-switcher-action flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-primary hover:bg-surface-2"
         onClick={() => selectAction('add')}><Plus size={17} className="shrink-0" />Додати акаунт</button>
-      {menuAccounts.map(account => <button type="button" key={account.id} data-account-action={`account:${account.id}`} disabled={busy}
-        onClick={() => selectAction(`account:${account.id}`)} aria-current={account.id === user?.id ? 'true' : undefined}
-        className={`mt-0.5 flex min-h-11 w-full items-center rounded-lg px-3 py-2 text-left text-sm transition-colors ${hoveredAction === `account:${account.id}` ? 'bg-primary/25' : 'hover:bg-surface-2'} ${account.id === user?.id ? 'text-primary' : 'text-text'}`}>
-        <span className="min-w-0 break-words leading-snug">{accountLabel(account)}</span>
-      </button>)}
+      {menuAccounts.map(account => {
+        const action = `account:${account.id}`
+        return <button type="button" key={account.id} data-account-switcher-action={action} data-drag-target={dragTarget === action || undefined} disabled={busy}
+          onClick={() => selectAction(action)} aria-current={account.id === user?.id ? 'true' : undefined}
+          className={`account-switcher-action mt-0.5 flex min-h-11 w-full items-center rounded-lg px-3 py-2 text-left text-sm hover:bg-surface-2 ${account.id === user?.id ? 'text-primary' : 'text-text'}`}>
+          <span className="min-w-0 break-words leading-snug">{accountLabel(account)}</span>
+        </button>
+      })}
       {error && <p role="alert" className="p-2 text-sm text-danger">{error}</p>}
     </div>, document.body)}
     <AddAccountDialog open={adding} onClose={() => setAdding(false)} />

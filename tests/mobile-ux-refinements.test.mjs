@@ -3,6 +3,7 @@ import test from 'node:test'
 import { ACCOUNT_SESSIONS_KEY, accountLabel, accountMetadata, readAccountSessions, rememberAccount, setSavedAccountProfileName } from '../src/lib/accountSessions.ts'
 import { deliberateLeftSwipeThreshold } from '../src/lib/plannerGestures.ts'
 import { accountActionAt } from '../src/lib/accountPressHit.ts'
+import { localTimeKey } from '../src/lib/planner.ts'
 
 test('account label uses the saved profile full_name and falls back safely', () => {
   assert.equal(accountLabel({ id: '1', email: 'mail@example.com', full_name: '  Основний  ' }), 'Основний')
@@ -50,17 +51,38 @@ test('previous local displayName metadata is read as the same profile name', () 
   assert.equal(readAccountSessions()[0].full_name, 'Старий запис')
 })
 
-test('drag hit test follows add and account rows and clears outside them', () => {
-  const row = (action, top, disabled = false) => ({
-    dataset: { accountAction: action }, disabled,
-    getBoundingClientRect: () => ({ left: 100, right: 350, top, bottom: top + 44 }),
-  })
-  const panel = { querySelectorAll: () => [row('add', 100), row('account:a', 144), row('account:b', 188)] }
-  assert.equal(accountActionAt(panel, 150, 120), 'add')
-  assert.equal(accountActionAt(panel, 150, 170), 'account:a')
-  assert.equal(accountActionAt(panel, 150, 210), 'account:b')
-  assert.equal(accountActionAt(panel, 150, 170), 'account:a')
-  assert.equal(accountActionAt(panel, 150, 260), null)
-  assert.equal(accountActionAt(panel, 80, 120), null)
-  assert.equal(accountActionAt({ querySelectorAll: () => [row('add', 100, true)] }, 150, 120), null)
+test('drag hit test follows elementFromPoint across add and account rows and clears outside them', () => {
+  const row = (action, disabled = false) => {
+    const element = {
+      dataset: { accountSwitcherAction: action },
+      disabled,
+      closest: selector => selector === '[data-account-switcher-action]' ? element : null,
+    }
+    return element
+  }
+  const add = row('add')
+  const accountA = row('account:a')
+  const accountB = row('account:b')
+  const disabled = row('account:disabled', true)
+  const rows = [add, accountA, accountB, disabled]
+  const panel = { contains: element => rows.includes(element) }
+  const hitTestDocument = {
+    elementFromPoint: (x, y) => {
+      if (x < 100 || x >= 350) return null
+      const target = y < 144 ? add : y < 188 ? accountA : y < 232 ? accountB : y < 276 ? disabled : null
+      return target ? { closest: selector => target.closest(selector) } : null
+    },
+  }
+  assert.equal(accountActionAt(panel, 150, 120, hitTestDocument), 'add')
+  assert.equal(accountActionAt(panel, 150, 170, hitTestDocument), 'account:a')
+  assert.equal(accountActionAt(panel, 150, 210, hitTestDocument), 'account:b')
+  assert.equal(accountActionAt(panel, 150, 170, hitTestDocument), 'account:a')
+  assert.equal(accountActionAt(panel, 150, 300, hitTestDocument), null)
+  assert.equal(accountActionAt(panel, 80, 120, hitTestDocument), null)
+  assert.equal(accountActionAt(panel, 150, 250, hitTestDocument), null)
+})
+
+test('local time keys preserve the device hour and exact minute', () => {
+  assert.equal(localTimeKey(new Date(2026, 8, 23, 3, 12, 59)), '03:12')
+  assert.equal(localTimeKey(new Date(2026, 8, 23, 15, 37, 1)), '15:37')
 })

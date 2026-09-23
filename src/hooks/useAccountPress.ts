@@ -1,15 +1,13 @@
 import { useEffect, useRef, type MouseEvent, type PointerEvent } from 'react'
 
 type Gesture = {
-  kind: 'touch' | 'pen'
-  id: number
-  pointerId?: number
-  touchId?: number
-  x: number
-  y: number
+  pointerId: number
+  startX: number
+  startY: number
   clientX: number
   clientY: number
   held: boolean
+  dragTarget: string | null
   element: HTMLAnchorElement
 }
 
@@ -30,146 +28,106 @@ export function useAccountPress({ onOpen, onHover, onSelect, getActionAt }: {
 
   const releaseClickSuppressionSoon = () => {
     clearTimeout(suppressClearTimer.current)
-    // A cancelled touchstart normally has no compatibility click, but keep a
-    // short guard for browsers that emit one after touchend. Never swallow a
-    // later, unrelated mouse click on Profile.
     suppressClearTimer.current = setTimeout(() => { suppressClick.current = false }, 500)
   }
 
   const stop = () => {
     clearTimeout(timer.current)
+    const current = gesture.current
     gesture.current = null
+    if (!current) return
+    try {
+      if (current.element.hasPointerCapture(current.pointerId)) current.element.releasePointerCapture(current.pointerId)
+    } catch { /* The browser may already have released capture. */ }
   }
-  const start = (kind: Gesture['kind'], id: number, x: number, y: number, element: HTMLAnchorElement, fromPointer = false) => {
-    if (gesture.current) return
+
+  const updateDragTarget = (current: Gesture, x: number, y: number) => {
+    current.clientX = x
+    current.clientY = y
+    const next = callbacks.current.getActionAt(x, y)
+    if (next === current.dragTarget) return
+    current.dragTarget = next
+    callbacks.current.onHover(next)
+  }
+  const start = (event: PointerEvent<HTMLAnchorElement>) => {
+    if (gesture.current || !event.isPrimary || event.button !== 0
+      || (event.pointerType !== 'touch' && event.pointerType !== 'pen')) return
     clearTimeout(suppressClearTimer.current)
     suppressClick.current = false
-    gesture.current = { kind, id, pointerId: fromPointer ? id : undefined, touchId: kind === 'touch' && !fromPointer ? id : undefined, x, y, clientX: x, clientY: y, held: false, element }
+    const current: Gesture = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      clientX: event.clientX,
+      clientY: event.clientY,
+      held: false,
+      dragTarget: null,
+      element: event.currentTarget,
+    }
+    gesture.current = current
+    try { event.currentTarget.setPointerCapture(event.pointerId) } catch { /* Window listeners still track this pointer. */ }
     timer.current = setTimeout(() => {
-      const current = gesture.current
-      if (!current || current.kind !== kind || current.id !== id) return
+      if (gesture.current !== current) return
       current.held = true
       suppressClick.current = true
       callbacks.current.onOpen(current.element.getBoundingClientRect())
       requestAnimationFrame(() => {
-        const active = gesture.current
-        if (active?.held) callbacks.current.onHover(callbacks.current.getActionAt(active.clientX, active.clientY))
+        if (gesture.current === current && current.held) updateDragTarget(current, current.clientX, current.clientY)
       })
     }, 450)
   }
 
   useEffect(() => {
-    const move = (kind: Gesture['kind'], id: number, x: number, y: number) => {
+    const pointerMove = (event: globalThis.PointerEvent) => {
       const current = gesture.current
-      if (!current || current.kind !== kind || current.id !== id) return false
-      current.clientX = x
-      current.clientY = y
-      if (!current.held && Math.hypot(x - current.x, y - current.y) > 10) {
+      if (!current || current.pointerId !== event.pointerId) return
+      current.clientX = event.clientX
+      current.clientY = event.clientY
+      if (!current.held) {
+        if (Math.hypot(event.clientX - current.startX, event.clientY - current.startY) <= 10) return
         suppressClick.current = true
         stop()
         releaseClickSuppressionSoon()
-        return false
+        return
       }
-      if (current.held) callbacks.current.onHover(callbacks.current.getActionAt(x, y))
-      return current.held
-    }
-    const finish = (kind: Gesture['kind'], id: number, x: number, y: number) => {
-      const current = gesture.current
-      if (!current || current.kind !== kind || current.id !== id) return
-      const selected = current.held ? callbacks.current.getActionAt(x, y) : null
-      stop()
-      callbacks.current.onHover(null)
-      if (selected) callbacks.current.onSelect(selected)
-    }
-    const findTouch = (event: globalThis.TouchEvent, id: number) =>
-      Array.from(event.changedTouches).find(touch => touch.identifier === id)
-    const touchMove = (event: globalThis.TouchEvent) => {
-      const current = gesture.current
-      if (current?.kind !== 'touch' || current.touchId === undefined) return
-      const touch = findTouch(event, current.touchId)
-      if (touch && move('touch', current.id, touch.clientX, touch.clientY)) event.preventDefault()
-    }
-    const touchEnd = (event: globalThis.TouchEvent) => {
-      const current = gesture.current
-      if (current?.kind !== 'touch' || current.touchId === undefined) return
-      const touch = findTouch(event, current.touchId)
-      if (!touch) return
-      const wasTap = !current.held && Math.hypot(touch.clientX - current.x, touch.clientY - current.y) <= 10
-      const wasHeld = current.held
-      const element = current.element
-      finish('touch', current.id, touch.clientX, touch.clientY)
-      if (wasHeld) releaseClickSuppressionSoon()
-      // touchstart is cancelled to prevent Android's native link long-press
-      // action from cancelling the drag; restore ordinary short-tap navigation.
-      if (wasTap) element.click()
-    }
-    const pointerMove = (event: globalThis.PointerEvent) => {
-      const current = gesture.current
-      if (current?.pointerId !== event.pointerId) return
-      if (event.pointerType === 'touch' && current.kind === 'touch') move('touch', current.id, event.clientX, event.clientY)
-      if (event.pointerType === 'pen' && current.kind === 'pen') move('pen', current.id, event.clientX, event.clientY)
+      updateDragTarget(current, event.clientX, event.clientY)
     }
     const pointerUp = (event: globalThis.PointerEvent) => {
       const current = gesture.current
       if (!current || current.pointerId !== event.pointerId) return
-      const wasHeld = current.held
-      const wasTap = current.kind === 'touch' && !wasHeld && Math.hypot(event.clientX - current.x, event.clientY - current.y) <= 10
-      const element = current.element
-      finish(current.kind, current.id, event.clientX, event.clientY)
-      if (wasHeld) releaseClickSuppressionSoon()
-      if (wasTap) element.click()
+      if (!current.held) {
+        stop()
+        return
+      }
+      updateDragTarget(current, event.clientX, event.clientY)
+      const selected = current.dragTarget
+      stop()
+      callbacks.current.onHover(null)
+      releaseClickSuppressionSoon()
+      if (selected) callbacks.current.onSelect(selected)
     }
-    const interrupt = () => {
-      if (!gesture.current) return
+    const interrupt = (pointerId?: number) => {
+      const current = gesture.current
+      if (!current || (pointerId !== undefined && current.pointerId !== pointerId)) return
       suppressClick.current = true
       stop()
       callbacks.current.onHover(null)
       releaseClickSuppressionSoon()
     }
-    const touchCancel = (event: globalThis.TouchEvent) => {
-      if (gesture.current?.kind === 'touch' && gesture.current.touchId !== undefined
-        && findTouch(event, gesture.current.touchId)) interrupt()
-    }
-    const pointerCancel = (event: globalThis.PointerEvent) => {
-      const current = gesture.current
-      if (current?.pointerId !== event.pointerId) return
-      // Android can cancel the pointer stream while touch events continue.
-      // Keep tracking that same finger through the touch fallback.
-      if (current.kind === 'touch' && current.touchId !== undefined) current.pointerId = undefined
-      else interrupt()
-    }
-    const touchStart = (event: globalThis.TouchEvent) => {
-      if (event.touches.length !== 1) return
-      const touch = event.touches[0]
-      const element = trigger.current
-      if (!element) return
-      // React's touchstart listener is passive in Chromium. This native,
-      // non-passive listener is needed so Android never takes over the hold
-      // with a context menu/selection and sends touchcancel after menu open.
-      event.preventDefault()
-      if (gesture.current?.kind === 'touch') gesture.current.touchId = touch.identifier
-      else start('touch', touch.identifier, touch.clientX, touch.clientY, element)
-    }
-    const element = trigger.current
-    element?.addEventListener('touchstart', touchStart, { passive: false })
-    window.addEventListener('touchmove', touchMove, { capture: true, passive: false })
-    window.addEventListener('touchend', touchEnd, true)
-    window.addEventListener('touchcancel', touchCancel, true)
+    const pointerCancel = (event: globalThis.PointerEvent) => interrupt(event.pointerId)
+    const blur = () => interrupt()
+    const visibilityChange = () => { if (document.visibilityState !== 'visible') interrupt() }
     window.addEventListener('pointermove', pointerMove, true)
     window.addEventListener('pointerup', pointerUp, true)
     window.addEventListener('pointercancel', pointerCancel, true)
-    window.addEventListener('blur', interrupt)
-    document.addEventListener('visibilitychange', interrupt)
+    window.addEventListener('blur', blur)
+    document.addEventListener('visibilitychange', visibilityChange)
     return () => {
-      element?.removeEventListener('touchstart', touchStart)
-      window.removeEventListener('touchmove', touchMove, true)
-      window.removeEventListener('touchend', touchEnd, true)
-      window.removeEventListener('touchcancel', touchCancel, true)
       window.removeEventListener('pointermove', pointerMove, true)
       window.removeEventListener('pointerup', pointerUp, true)
       window.removeEventListener('pointercancel', pointerCancel, true)
-      window.removeEventListener('blur', interrupt)
-      document.removeEventListener('visibilitychange', interrupt)
+      window.removeEventListener('blur', blur)
+      document.removeEventListener('visibilitychange', visibilityChange)
       clearTimeout(suppressClearTimer.current)
       stop()
     }
@@ -177,11 +135,14 @@ export function useAccountPress({ onOpen, onHover, onSelect, getActionAt }: {
 
   return {
     ref: trigger,
-    onPointerDown: (event: PointerEvent<HTMLAnchorElement>) => {
-      if ((event.pointerType === 'touch' || event.pointerType === 'pen') && event.isPrimary && event.button === 0) {
-        start(event.pointerType, event.pointerId, event.clientX, event.clientY, event.currentTarget, true)
-        try { event.currentTarget.setPointerCapture(event.pointerId) } catch { /* Window listeners still track the gesture. */ }
-      }
+    onPointerDown: start,
+    onLostPointerCapture: (event: PointerEvent<HTMLAnchorElement>) => {
+      const current = gesture.current
+      if (!current || current.pointerId !== event.pointerId) return
+      suppressClick.current = true
+      stop()
+      callbacks.current.onHover(null)
+      releaseClickSuppressionSoon()
     },
     onClickCapture: (event: MouseEvent<HTMLAnchorElement>) => {
       if (event.detail !== 0 && suppressClick.current) {

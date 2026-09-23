@@ -257,6 +257,37 @@ a, button {
   animation: motion-soft-enter var(--motion-normal) var(--motion-ease-out) backwards;
 }
 
+@keyframes account-switcher-enter {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes account-switcher-exit {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(6px) scale(0.98); }
+}
+
+.account-switcher-menu {
+  transform-origin: bottom right;
+  animation: account-switcher-enter 170ms var(--motion-ease-out) both;
+}
+
+.account-switcher-menu[data-state='closed'] {
+  animation: account-switcher-exit 130ms var(--motion-ease-in) both;
+  pointer-events: none;
+}
+
+.account-switcher-action {
+  transition:
+    background-color 100ms ease-out,
+    transform 100ms ease-out;
+}
+
+.account-switcher-action[data-drag-target='true'] {
+  background-color: color-mix(in srgb, var(--color-primary) 22%, var(--color-surface));
+  transform: scale(0.985);
+}
+
 .motion-popover {
   transform-origin: top center;
   opacity: 1;
