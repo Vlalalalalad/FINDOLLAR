@@ -1,91 +1,39 @@
 # FINDOLLAR
 
-FINDOLLAR is a cross-platform personal finance tracker and planner built as a progressive web app. The client uses React, TypeScript, Vite, and Tailwind CSS; Supabase provides authentication, PostgreSQL, storage, Row Level Security, and Edge Functions.
+FINDOLLAR - це кросплатформний застосунок для обліку особистих фінансів і планування, створений у форматі Progressive Web App.
 
-## Features
+Проєкт поєднує керування особистими фінансами, планування, облік боргів, статистику та підтримку кількох акаунтів в одному інтерфейсі. Він розрахований на роботу як на мобільних пристроях, так і в браузері на комп'ютері, при цьому взаємодія максимально наближена до звичайного застосунку.
 
-- Accounts, balances, income, expenses, transfers, categories, and statistics
-- Debt tracking with history and linked account transactions
-- Plans, notes, goals, recurring items, reminders, priorities, and calendar views
-- Multiple locally saved FINDOLLAR accounts with isolated sessions and device settings
-- Background Web Push notifications with per-account subscription controls
-- Light and dark themes, installable PWA shell, and responsive mobile/desktop layouts
-- Supabase RLS policies that isolate each account's data
+## Основні можливості
 
-## Requirements
+- Рахунки, баланси, доходи, витрати, перекази, категорії та фінансова статистика
+- Облік боргів та історії платежів
+- Плани, нотатки, цілі, повторювані задачі, нагадування, пріоритети та календар
+- Кілька акаунтів FINDOLLAR на одному пристрої
+- Фонові Web Push сповіщення
+- Світла та темна теми
+- Адаптивний інтерфейс для мобільних пристроїв і комп'ютерів
+- Можливість встановити FINDOLLAR як PWA
+- Ізоляція даних користувачів за допомогою Supabase Row Level Security
 
-- Node.js 22 or newer
-- npm
-- A Supabase project
+## Технології
 
-## Local setup
+FINDOLLAR створений з використанням:
 
-1. Install dependencies:
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- Supabase
+- PostgreSQL
+- Vercel
+- Progressive Web App технологій
+- Web Push
 
-   ```bash
-   npm install
-   ```
+## Архітектура
 
-2. Create a local environment file from the safe template:
+Клієнтська частина створена як адаптивний PWA-застосунок. Supabase використовується для авторизації, зберігання даних, Row Level Security та серверних функцій.
 
-   ```bash
-   cp .env.example .env.local
-   ```
+Дані користувачів ізольовані між акаунтами. Також підтримується збереження кількох локальних сесій на одному пристрої.
 
-3. Configure the public browser variables in `.env.local`:
-
-   ```text
-   VITE_SUPABASE_URL=
-   VITE_SUPABASE_ANON_KEY=
-   VITE_WEB_PUSH_PUBLIC_KEY=
-   ```
-
-   Vite variables are public client configuration. Never place a Supabase service-role key, a VAPID private key, access tokens, or other server secrets in a `VITE_` variable.
-
-4. Start the development server:
-
-   ```bash
-   npm run dev
-   ```
-
-## Quality checks
-
-```bash
-npm test
-npm run build
-```
-
-The production build includes TypeScript validation and creates the Vite PWA output in `dist/`.
-
-## Supabase
-
-Database migrations live in `supabase/migrations/` and should be applied in order to a new environment. Existing environments should receive only migrations that are not already recorded.
-
-Edge Function source is version-controlled under `supabase/functions/`:
-
-- `delete-account` removes the authenticated account and its owned data.
-- `fetch-rates` refreshes supported exchange rates.
-- `planner-reminders` sends scheduled Web Push reminders.
-
-The Web Push deployment sequence, required server-only secrets, and scheduler setup are documented in [`supabase/WEB_PUSH_DEPLOYMENT.md`](supabase/WEB_PUSH_DEPLOYMENT.md). Secret values belong in the deployment environment and must never be committed.
-
-## Project structure
-
-```text
-public/                     PWA manifest, icons, and notification worker code
-src/components/              Shared UI and planner components
-src/context/                 Authentication, organization, planner, and theme state
-src/hooks/                   Reusable application hooks
-src/lib/                     Domain logic and browser/Supabase integrations
-src/pages/                   Application routes
-src/types/                   TypeScript domain and database types
-supabase/functions/          Edge Function source
-supabase/migrations/         Versioned database migrations
-supabase/scheduler/          Scheduler setup source
-tests/                       Automated regression tests
-```
-
-## Repository safety
-
-Local environment files, build output, dependencies, Vercel state, caches, logs, and editor files are excluded by `.gitignore`. `.env.example` contains variable names only and is safe to commit.
-
+Фонові нагадування працюють через Web Push, тому сповіщення можуть надходити навіть тоді, коли FINDOLLAR не відкритий.
